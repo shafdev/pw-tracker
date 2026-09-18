@@ -243,7 +243,7 @@ document.getElementById('importBtn').onclick = ()=>{
 const SKEY = 'pw-sync-v1';
 let syncCfg = null;
 try{ syncCfg = JSON.parse(localStorage.getItem(SKEY) || 'null'); }catch(e){}
-let pushTimer = null;
+let pushTimer = null, lastSync = localStorage.getItem('pw-last');
 
 function syncStatus(msg){ document.getElementById('syncStatus').textContent = msg; }
 function syncUI(){
@@ -269,7 +269,7 @@ async function syncPush(silent){
     const content = JSON.stringify({ts: Date.now(), state});
     await gh('PATCH', '/gists/' + syncCfg.gistId, {description:'PW Lecture Tracker',
       files:{'pw-progress.json':{content}}});
-    localStorage.setItem('pw-last', content);
+    lastSync = content; localStorage.setItem('pw-last', content);
     if(!silent) syncStatus('Pushed \u2713 ' + new Date().toLocaleTimeString());
   }catch(e){ syncStatus('Push failed: ' + e.message + ' (will retry on next change)'); }
 }
@@ -279,11 +279,11 @@ async function syncPull(silent){
     const g = await gh('GET', '/gists/' + syncCfg.gistId);
     const f = g.files && g.files['pw-progress.json'];
     if(!f){ if(!silent) syncStatus('Gist empty — push first.'); return; }
-    if(f.content !== localStorage.getItem('pw-last')){
+    if(f.content !== lastSync){
       const data = JSON.parse(f.content);
       state = data.state || {};
       localStorage.setItem(KEY, JSON.stringify(state));
-      localStorage.setItem('pw-last', f.content);
+      lastSync = f.content; localStorage.setItem('pw-last', f.content);
       render();
       syncStatus('Pulled newer progress \u2713 ' + new Date().toLocaleTimeString());
     } else syncStatus('In sync \u2713 ' + new Date().toLocaleTimeString());
