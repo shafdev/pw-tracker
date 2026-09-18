@@ -127,7 +127,7 @@ function lecList(subj, ch, lecs){
     const st = state[key(subj,ch,i)] || 'todo';
     return `<div class="lec ${st}" data-k="${key(subj,ch,i)}">
       <div class="st" title="click to cycle">${st==='done'?'&#10003;':st==='skip'?'&ndash;':''}</div>
-      <div class="ltitle">${l.t}</div><div class="ldate">${l.d}</div><div class="ldur">${l.dur}</div></div>`;
+      <div class="ltitle">${l.title}</div><div class="ldate">${l.date}</div><div class="ldur">${l.dur}</div></div>`;
   }).join('') + '</div>';
 }
 
@@ -141,7 +141,7 @@ function render(){
       const entries = Object.entries(chs);
       const chHtml = entries.map(([ch, lecs])=>{
         const names = lecs.map((l,i)=>({l,i,st:state[key(s,ch,i)]||'todo'}));
-        const shown = names.filter(n=>!q || n.l.t.toLowerCase().includes(q) || ch.toLowerCase().includes(q));
+        const shown = names.filter(n=>!q || n.l.title.toLowerCase().includes(q) || ch.toLowerCase().includes(q));
         if(q && !shown.length) return '';
         const done = names.filter(n=>n.st==='done').length, skip = names.filter(n=>n.st==='skip').length;
         const hrs = names.reduce((a,n)=>a+durMin(n.l.dur),0)/60;
@@ -198,7 +198,7 @@ function updateStats(){
   if(next.length && left>0){
     nb.classList.remove('hidden');
     document.getElementById('nextList').innerHTML = next.map(n=>
-      `<div class="lec todo"><div class="st"></div><div class="ltitle">${n.l.t}
+      `<div class="lec todo"><div class="st"></div><div class="ltitle">${n.l.title}
       <span style="color:var(--dim);font-size:12px"> — ${n.s.split(' ')[0]} &middot; ${n.c.split('|')[1]?.trim()||''}</span></div>
       <div class="ldur">${n.l.dur}</div></div>`).join('');
   } else nb.classList.add('hidden');
