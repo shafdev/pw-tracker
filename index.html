@@ -146,7 +146,7 @@ function render(){
         const done = names.filter(n=>n.st==='done').length, skip = names.filter(n=>n.st==='skip').length;
         const hrs = names.reduce((a,n)=>a+durMin(n.l.dur),0)/60;
         return `<div class="chapter"><div class="chead" data-ch>
-          <span class="cname">${ch}</span>
+          <span class="cname">${ch.split('|').slice(0,2).map(x=>x.trim()).join(' · ')}</span>
           <span class="cmeta">${done}/${lecs.length} done${skip?' &middot; '+skip+' skipped':''} &middot; ${hrs.toFixed(1)}h</span></div>
           ${lecList(s, ch, lecs)}</div>`;
       }).join('');
