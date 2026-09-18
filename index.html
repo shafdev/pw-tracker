@@ -311,6 +311,11 @@ document.getElementById('syncOffBtn').onclick = ()=>{
   syncStatus('Disconnected — progress stays on this device only.');
 };
 syncUI();
-if(syncCfg){ syncPull(true); setInterval(()=>syncPull(true), 60000); }
+if(syncCfg){
+  syncPull(true);
+  setInterval(()=>syncPull(true), 15000);
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncPull(true); });
+  window.addEventListener('focus', ()=>syncPull(true));
+}
 render();
 </script></body></html>
