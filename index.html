@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PW Civil AE/JE — Tech Subjects Tracker</title>
+<style>
+:root{--bg:#0f1216;--card:#171c22;--card2:#1d242c;--line:#2a333d;--txt:#e8edf2;--dim:#8b98a5;
+--acc:#4da3ff;--ok:#3ecf6f;--skip:#f0a437;--pri:#5b8def}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:18px}
+h1{font-size:21px;margin-bottom:4px}
+.sub{color:var(--dim);font-size:13px;margin-bottom:16px}
+.wrap{max-width:1000px;margin:0 auto}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat .v{font-size:22px;font-weight:700}
+.stat .l{color:var(--dim);font-size:12px;margin-top:2px}
+.bar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden;margin:6px 0 14px}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));width:0;transition:width .3s}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);
+border-radius:10px;padding:12px 14px;margin-bottom:16px}
+.controls label{font-size:12px;color:var(--dim);display:block}
+.controls input,.controls select{background:var(--card2);color:var(--txt);border:1px solid var(--line);
+border-radius:6px;padding:6px 8px;font-size:14px;width:110px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-size:13px}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn{padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--card2);color:var(--txt);cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--acc)}
+.subject{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.shead{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;user-select:none}
+.shead:hover{background:var(--card2)}
+.sname{font-weight:600;flex:1}
+.smeta{color:var(--dim);font-size:12px;white-space:nowrap}
+.sbar{width:130px;height:7px;background:var(--card2);border-radius:4px;overflow:hidden}
+.sbar>div{height:100%;background:var(--ok);width:0}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--pri);color:#fff}
+.chapter{border-top:1px solid var(--line);padding:10px 16px}
+.chead{display:flex;gap:10px;align-items:center;cursor:pointer;user-select:none;padding:4px 0}
+.cname{font-weight:600;font-size:14px;flex:1}
+.cmeta{color:var(--dim);font-size:12px}
+.lecs{margin-top:6px}
+.lec{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:14px}
+.lec:hover{background:var(--card2)}
+.st{width:20px;height:20px;border-radius:50%;border:2px solid var(--dim);cursor:pointer;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;font-size:12px}
+.lec.done .st{background:var(--ok);border-color:var(--ok);color:#04140a}
+.lec.skip .st{background:var(--skip);border-color:var(--skip);color:#241300}
+.ltitle{flex:1}
+.lec.done .ltitle{text-decoration:line-through;color:var(--dim)}
+.lec.skip .ltitle{color:var(--skip);opacity:.7}
+.ldate{color:var(--dim);font-size:12px;white-space:nowrap}
+.ldur{color:var(--dim);font-size:12px;white-space:nowrap;width:52px;text-align:right}
+.next{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.next h3{font-size:14px;margin-bottom:8px}
+.next .lec{padding:5px 8px}
+.foot{color:var(--dim);font-size:12px;text-align:center;margin-top:18px}
+.syncbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px}
+.syncbox summary{cursor:pointer;color:var(--dim);user-select:none}
+.syncrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.syncrow input{flex:1;min-width:180px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.syncstatus{margin-top:8px;color:var(--dim);font-size:12px}
+.synchelp{margin-top:6px;color:var(--dim);font-size:11px;line-height:1.5}
+details summary{cursor:pointer;list-style:none}
+.hidden{display:none}
+@media(max-width:640px){.sbar{display:none}.sname{font-size:14px}}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Civil AE/JE — Tech Subjects Tracker</h1>
+<div class="sub">Ashoka 2026 Batch &middot; 322 lectures &middot; 663 hours</div>
+
+<div class="stats">
+<div class="stat"><div class="v" id="stDone">0</div><div class="l">Lectures done</div></div>
+<div class="stat"><div class="v" id="stLeft">0</div><div class="l">Lectures left</div></div>
+<div class="stat"><div class="v" id="stHrs">0h</div><div class="l">Watch time left (1x)</div></div>
+<div class="stat"><div class="v" id="stDays">–</div><div class="l">Days to finish</div></div>
+<div class="stat"><div class="v" id="stEta">–</div><div class="l">Est. finish date</div></div>
+</div>
+<div class="bar"><div id="mainBar"></div></div>
+
+<div class="controls">
+<div><label>Daily study time (h)</label><input type="number" id="dailyH" min="0.5" step="0.5" value="2"></div>
+<div><label>Playback speed</label><select id="speed"><option>1</option><option selected>1.5</option><option>1.75</option><option>2</option><option>2.5</option></select></div>
+<div style="flex:1;min-width:140px"><label>Search</label><input type="text" id="q" placeholder="filter lectures..." style="width:100%"></div>
+<div style="align-self:end"><button class="btn" id="expandAll">Expand all</button></div>
+<div style="align-self:end"><button class="btn" id="collapseAll">Collapse</button></div>
+<div style="align-self:end"><button class="btn" id="exportBtn">Export</button></div>
+<div style="align-self:end"><button class="btn" id="importBtn">Import</button></div>
+</div>
+
+<div class="next hidden" id="nextBox"><h3>Next up</h3><div id="nextList"></div></div>
+
+<details class="syncbox" id="syncBox">
+<summary>&#9729; Cloud sync — track from multiple devices</summary>
+<div class="syncrow">
+<input type="password" id="syncToken" placeholder="GitHub token (gist scope)" autocomplete="off">
+<button class="btn" id="syncSetupBtn">Connect</button>
+<button class="btn hidden" id="syncPullBtn">Pull now</button>
+<button class="btn hidden" id="syncPushBtn">Push now</button>
+<button class="btn hidden" id="syncOffBtn">Disconnect</button>
+</div>
+<div class="syncstatus" id="syncStatus">Not connected — progress stays on this device only.</div>
+<div class="synchelp">Create a token at github.com/settings/tokens (classic token, tick only the <b>gist</b> scope).
+Paste it once on each device — it is stored in that device's localStorage only, never in the site.
+Progress syncs through a private gist (last write wins; changes auto-push after 2s).</div>
+</details>
+<div id="subjects"></div>
+<div class="foot">Progress is saved locally in this browser (localStorage). Export regularly to back up.<br>
+Click the circle to cycle: to-do &rarr; done &rarr; skipped &rarr; to-do</div>
+</div>
+
+<script>
+const DATA = {"Soil Mechanics & Foundation Engineering": {"CH - 01 | INTRODUCTION TO SOIL MECHANICS | Lecture: | 3/3 | DPP: | 0/3": [{"date": "11 Nov 2025", "title": "Introduction to Soil Mechanics 03 : Part 03", "dur": "1h:58m"}, {"date": "10 Nov 2025", "title": "Introduction to Soil Mechanics 02 : Part 02", "dur": "1h:54m"}, {"date": "8 Nov 2025", "title": "Introduction to Soil Mechanics 01 : Part 01", "dur": "1h:38m"}], "CH - 02 | INDEX PROPERTIES OF SOIL | Lecture: | 0/8 | DPP: | 0/5": [{"date": "21 Nov 2025", "title": "Index Properties Of Soil 08 : Part 08", "dur": "1h:57m"}, {"date": "20 Nov 2025", "title": "Index Properties Of Soil 07 : Part 07", "dur": "1h:23m"}, {"date": "19 Nov 2025", "title": "Index Properties Of Soil 06 : Part 06", "dur": "1h:52m"}, {"date": "17 Nov 2025", "title": "Index Properties Of Soil 05 : Part 05", "dur": "1h:53m"}, {"date": "15 Nov 2025", "title": "Index Properties Of Soil 04 : Part 04", "dur": "1h:55m"}, {"date": "14 Nov 2025", "title": "Index Properties Of Soil 03 : Part 03", "dur": "1h:56m"}, {"date": "13 Nov 2025", "title": "Index Properties Of Soil 02 : Part 02", "dur": "2h"}, {"date": "12 Nov 2025", "title": "Index Properties Of Soil 01 : Part 01", "dur": "2h:2m"}], "CH - 03 | CLASSIFICATION OF SOIL | Lecture: | 0/2 | DPP: | 0/1": [{"date": "24 Nov 2025", "title": "Classification Of Soil 02 : Part 02", "dur": "1h:57m"}, {"date": "22 Nov 2025", "title": "Classification Of Soil 01 : Part 01", "dur": "1h:59m"}], "CH - 04 | SOIL STRUCTURE | Lecture: | 0/3 | DPP: | 0/2": [{"date": "27 Nov 2025", "title": "Soil Structure 03 : Part 03", "dur": "1h:59m"}, {"date": "26 Nov 2025", "title": "Soil Structure 02 : Part 02", "dur": "1h:57m"}, {"date": "25 Nov 2025", "title": "Soil Structure 01 : Part 01", "dur": "1h:9m"}], "CH - 05 | COMPACTION OF SOIL | Lecture: | 0/3 | DPP: | 0/2": [{"date": "1 Dec 2025", "title": "Compaction Of Soil 03 : Part 03", "dur": "1h:59m"}, {"date": "29 Nov 2025", "title": "Compaction Of Soil 02 : Part 02", "dur": "1h:26m"}, {"date": "28 Nov 2025", "title": "Compaction Of Soil 01 : Part 01", "dur": "1h:53m"}], "CH - 06 | CAPILLARITY IN SOIL | Lecture: | 0/1 | DPP: | 0/1": [{"date": "2 Dec 2025", "title": "Capillarity in Soil : One Shot", "dur": "2h:2m"}], "CH - 07 | STRESSES IN SOILS | Lecture: | 0/2 | DPP: | 0/1": [{"date": "4 Dec 2025", "title": "Stresses in soil 02 : Part 02", "dur": "1h:54m"}, {"date": "3 Dec 2025", "title": "Stresses in soil 01 : Part 01", "dur": "1h:58m"}], "CH - 08 | PERMEABILITY OF SOIL | Lecture: | 0/3 | DPP: | 0/1": [{"date": "8 Dec 2025", "title": "Permeability of Soil 03 : Part 03", "dur": "1h:58m"}, {"date": "6 Dec 2025", "title": "Permeability of Soil 02 : Part 02", "dur": "1h:54m"}, {"date": "5 Dec 2025", "title": "Permeability of Soil 01 : Part 01", "dur": "1h:41m"}], "CH - 09 | SEEPAGE ANALYSIS | Lecture: | 0/4 | DPP: | 0/1": [{"date": "12 Dec 2025", "title": "Seepage Analysis 04 : Part 04", "dur": "1h:59m"}, {"date": "11 Dec 2025", "title": "Seepage Analysis 03 : Part 03", "dur": "2h"}, {"date": "10 Dec 2025", "title": "Seepage Analysis 02 : Part 02", "dur": "1h:48m"}, {"date": "9 Dec 2025", "title": "Seepage Analysis 01 : Part 01", "dur": "1h:56m"}], "CH - 10 | STRESS DISTRIBUTION IN SOILS | Lecture: | 0/2 | DPP: | 0/1": [{"date": "15 Dec 2025", "title": "Stress Distribution in Soils 02 : Part 02", "dur": "1h:50m"}, {"date": "13 Dec 2025", "title": "Stress Distribution in Soils 01 : Part 01", "dur": "1h:58m"}], "CH - 11 | CONSOLIDATION OF SOIL | Lecture: | 0/3 | DPP: | 0/1": [{"date": "18 Dec 2025", "title": "Consolidation Of Soil 03 : Part 03", "dur": "2h"}, {"date": "17 Dec 2025", "title": "Consolidation Of Soil 02 : Part 02", "dur": "1h:58m"}, {"date": "16 Dec 2025", "title": "Consolidation Of Soil 01 : Part 01", "dur": "1h:58m"}], "CH - 12 | SHEAR STRENGTH OF SOIL | Lecture: | 0/4 | DPP: | 0/2": [{"date": "23 Dec 2025", "title": "Shear Strength of soil 04 : Part 04", "dur": "2h:38m"}, {"date": "22 Dec 2025", "title": "Shear Strength of soil 03 : Part 03", "dur": "58m"}, {"date": "20 Dec 2025", "title": "Shear Strength of soil 02 : Part 02", "dur": "2h:2m"}, {"date": "19 Dec 2025", "title": "Shear Strength of soil 01 : Part 01", "dur": "1h:58m"}], "CH - 13 | EARTH PRESSURE THEORY | Lecture: | 0/3 | DPP: | 0/1": [{"date": "26 Dec 2025", "title": "Earth Pressure Theory 03 : Part 03", "dur": "2h:2m"}, {"date": "25 Dec 2025", "title": "Earth Pressure Theory 02 : Part 02 || Recorded", "dur": "54m"}, {"date": "24 Dec 2025", "title": "Earth Pressure Theory 01 : Part 01", "dur": "1h:58m"}], "CH - 14 | STABILITY OF SLOPES | Lecture: | 0/1 | DPP: | 0/1": [{"date": "27 Dec 2025", "title": "Stability of slopes : One shot", "dur": "1h:58m"}], "CH - 15 | FOUNDATION ENGINEERING | Lecture: | 0/6 | DPP: | 0/3": [{"date": "3 Jan 2026", "title": "Foundation Engineering 06 : Part 06", "dur": "1h:45m"}, {"date": "2 Jan 2026", "title": "Foundation Engineering 05 : Part 05", "dur": "1h:49m"}, {"date": "1 Jan 2026", "title": "Foundation Engineering 04 : Part 04 || Extra Lecture", "dur": "1h:47m"}, {"date": "31 Dec 2025", "title": "Foundation Engineering 03 : Part 03", "dur": "2h:11m"}, {"date": "30 Dec 2025", "title": "Foundation Engineering 02 : Part 02", "dur": "2h:29m"}, {"date": "29 Dec 2025", "title": "Foundation Engineering 01 : Part 01", "dur": "18m"}]}, "Strength of Materials": {"CH - 01 | Introduction | Lecture: | 0/2 | DPP: | 0/1": [{"date": "13 Apr 2026", "title": "Introduction 02 : (Part 02)", "dur": "1h:50m"}, {"date": "11 Apr 2026", "title": "Introduction 01 : (Part 01)", "dur": "1h:47m"}], "CH - 02 | Stress and Strain | Lecture: | 0/5 | DPP: | 0/1": [{"date": "18 Apr 2026", "title": "Stress and Strain 05 : Part 05", "dur": "1h:35m"}, {"date": "17 Apr 2026", "title": "Stress and Strain 04 : Part 04", "dur": "1h:43m"}, {"date": "16 Apr 2026", "title": "Stress and Strain 03 : Part 03", "dur": "1h:48m"}, {"date": "15 Apr 2026", "title": "Stress and Strain 02 : Part 02", "dur": "1h:49m"}, {"date": "14 Apr 2026", "title": "Stress and Strain 01 : Part 01", "dur": "1h:48m"}], "CH - 03 | Principal Stress and Strain | Lecture: | 0/2": [{"date": "21 Apr 2026", "title": "Principal Stress and Strain 02 : Part 02", "dur": "1h:33m"}, {"date": "20 Apr 2026", "title": "Principal Stress and Strain 01 : Part 01", "dur": "1h:30m"}], "CH - 04 | Moment of Inertia and Centroid | Lecture: | 0/2 | DPP: | 0/1": [{"date": "24 Apr 2026", "title": "Moment of Inertia and Centroid 02 : Part 02", "dur": "1h:38m"}, {"date": "22 Apr 2026", "title": "Moment of Inertia and Centroid 01 : Part 01", "dur": "1h:47m"}], "CH - 05 | Bending Moment & Shear Force Diagram | Lecture: | 0/6 | DPP: | 0/1": [{"date": "1 May 2026", "title": "Bending Moment & Shear Force Diagram 06 : Part 06", "dur": "1h:21m"}, {"date": "30 Apr 2026", "title": "Bending Moment & Shear Force Diagram 05 : Part 05", "dur": "1h:12m"}, {"date": "29 Apr 2026", "title": "Bending Moment & Shear Force Diagram 04 : Part 04", "dur": "1h:32m"}, {"date": "28 Apr 2026", "title": "Bending Moment & Shear Force Diagram 03 : Part 03", "dur": "1h:15m"}, {"date": "27 Apr 2026", "title": "Bending Moment & Shear Force Diagram 02 : Part 02 || Rescheduled @6:45 PM", "dur": "1h:31m"}, {"date": "25 Apr 2026", "title": "Bending Moment & Shear Force Diagram 01 : Part 01 || Recorded", "dur": "25m"}], "CH - 06 | Deflection of Beam | Lecture: | 0/4 | DPP: | 0/1": [{"date": "14 May 2026", "title": "Deflection of Beam 04 : Part 04", "dur": "1h:20m"}, {"date": "13 May 2026", "title": "Deflection of Beam 03 : Part 03", "dur": "1h:29m"}, {"date": "12 May 2026", "title": "Deflection of Beam 02 : Part 02", "dur": "1h:39m"}, {"date": "2 May 2026", "title": "Deflection of Beam 01 : Part 01", "dur": "1h:37m"}], "CH - 07 | Bending Stress & Shear Stress | Lecture: | 0/2 | DPP: | 0/1": [{"date": "18 May 2026", "title": "Bending Stress & Shear Stress 02 : Part 02", "dur": "1h:23m"}, {"date": "16 May 2026", "title": "Bending Stress & Shear Stress 01 : Part 01", "dur": "1h:32m"}], "CH - 08 | Torsion | Lecture: | 0/2 | DPP: | 0/1": [{"date": "20 May 2026", "title": "Torsion 02 : Part 02 || Extra Lecture", "dur": "1h:5m"}, {"date": "19 May 2026", "title": "Torsion 01 : Part 01 || Extra Lecture", "dur": "1h:27m"}], "CH - 09 | Thick and Thin Cylinders | Lecture: | 0/1 | DPP: | 0/1": [{"date": "21 May 2026", "title": "Thick and Thin Cylinders : One Shot || Extra Lecture", "dur": "1h:38m"}], "CH - 10 | Column | Lecture: | 0/1 | DPP: | 0/1": [{"date": "22 May 2026", "title": "Column : One Shot", "dur": "1h:38m"}], "CH - 11 | Spring | Lecture: | 0/1 | DPP: | 0/1": [{"date": "23 May 2026", "title": "Spring : One Shot", "dur": "1h:22m"}], "CH - 12 | Practice Session | Lecture: | 0/1": [{"date": "25 May 2026", "title": "Practice Session : One Shot", "dur": "1h:45m"}]}, "Surveying": {"CH - 01 | Fundamental Concept of Surveying | Lecture: | 0/3 | DPP: | 0/1": [{"date": "3 Jun 2026", "title": "Fundamental Concept of Surveying 03 : Part 03 || Extra Lecture", "dur": "2h:32m"}, {"date": "2 Jun 2026", "title": "Fundamental Concept of Surveying 02 : Part 02", "dur": "2h:33m"}, {"date": "1 Jun 2026", "title": "Fundamental Concept of Surveying 01 : Part 01", "dur": "2h:29m"}], "CH - 02 | Horizontal Measurement | Lecture: | 0/5 | DPP: | 0/3": [{"date": "9 Jun 2026", "title": "Horizontal Measurement 05 : Part 05", "dur": "2h:26m"}, {"date": "8 Jun 2026", "title": "Horizontal Measurement 04 : Part 04", "dur": "2h:27m"}, {"date": "6 Jun 2026", "title": "Horizontal Measurement 03 : Part 03", "dur": "2h:29m"}, {"date": "5 Jun 2026", "title": "Horizontal Measurement 02 : Part 02", "dur": "2h:25m"}, {"date": "4 Jun 2026", "title": "Horizontal Measurement 01 : Part 01", "dur": "2h:34m"}], "CH - 03 | Compass Survey | Lecture: | 0/3 | DPP: | 0/3": [{"date": "13 Jun 2026", "title": "Compass Survey 03 : Part 03", "dur": "2h:42m"}, {"date": "12 Jun 2026", "title": "Compass Survey 02 : Part 02", "dur": "2h:31m"}, {"date": "10 Jun 2026", "title": "Compass Survey 01 : Part 01", "dur": "2h:25m"}], "CH - 04 | Theodolite | Lecture: | 0/2 | DPP: | 0/1": [{"date": "16 Jun 2026", "title": "Theodolite 02 : Part 02", "dur": "1h:22m"}, {"date": "15 Jun 2026", "title": "Theodolite 01 : Part 01 || Recorded Lecture", "dur": "2h:51m"}], "CH - 05 | Traversing | Lecture: | 0/2 | DPP: | 0/1": [{"date": "18 Jun 2026", "title": "Traversing 02 : Part 02 || Extra Lecture", "dur": "2h:45m"}, {"date": "17 Jun 2026", "title": "Traversing 01 : Part 01", "dur": "2h:40m"}], "CH - 06 | Levelling | Lecture: | 0/4 | DPP: | 0/2": [{"date": "23 Jun 2026", "title": "Levelling 04 : Part 04", "dur": "2h:47m"}, {"date": "22 Jun 2026", "title": "Levelling 03 : Part 03", "dur": "2h:47m"}, {"date": "20 Jun 2026", "title": "Levelling 02 : Part 02 || Recorded Lecture", "dur": "1h:7m"}, {"date": "19 Jun 2026", "title": "Levelling 01 : Part 01", "dur": "2h:46m"}], "CH - 07 | Tacheometry | Lecture: | 0/1 | DPP: | 0/1": [{"date": "24 Jun 2026", "title": "Tacheometry : One Shot", "dur": "2h:51m"}], "CH - 08 | Contour & Curves | Lecture: | 0/2 | DPP: | 0/1": [{"date": "26 Jun 2026", "title": "Contour & Curves 02 : Part 02", "dur": "2h:50m"}, {"date": "25 Jun 2026", "title": "Contour & Curves 01 : Part 01", "dur": "2h:39m"}], "CH - 09 | Curve & Area and Volume | Lecture: | 0/1 | DPP: | 0/1": [{"date": "27 Jun 2026", "title": "Curve & Area and Volume : One Shot", "dur": "3h:19m"}], "CH - 10 | Plane Table Survey | Lecture: | 0/2 | DPP: | 0/1": [{"date": "29 Jun 2026", "title": "Plane Table Survey 02 : Part 02", "dur": "2h:35m"}, {"date": "28 Jun 2026", "title": "Plane Table Survey 01 : Part 01", "dur": "2h:56m"}], "CH - 11 | Photogrammetry GIS & GPS (Recorded) | Lecture: | 0/1": [{"date": "1 Jul 2026", "title": "Photogrammetry GIS & GPS : One Shot || Recorded Lecture", "dur": "1h:42m"}], "CH - 12 | Advance Surveying Instruments & Miscellaneous | Lecture: | 0/1": [{"date": "30 Jun 2026", "title": "Advance Surveying Instruments & Miscellaneous 01 : Part 01", "dur": "2h:48m"}]}, "Reinforced Cement Concrete": {"CH - 01 | Introduction and basic design concept | Lecture: | 2/2 | DPP: | 0/1": [{"date": "4 May 2026", "title": "Introduction and basic design concept 02 : Part 02 || Rescheduled @06:00 PM", "dur": "1h:59m"}, {"date": "2 May 2026", "title": "Introduction and Basic Design Concept 01 : Part 01", "dur": "1h:49m"}], "CH - 02 | Beam Designing (LSM method) | Lecture: | 9/10 | DPP: | 0/1": [{"date": "24 May 2026", "title": "Beam Designing (LSM method) 10 : Part 10 || Extra Lecture", "dur": "4h:39m"}, {"date": "15 May 2026", "title": "Beam Designing (LSM method) 09 : Part - 09 || Extra Lecture || Reschedule @08:00 AM", "dur": "2h:19m"}, {"date": "14 May 2026", "title": "Beam Designing (LSM method) 08 : Part - 08 || Extra Lecture || Reschedule @08:00 AM", "dur": "1h:41m"}, {"date": "13 May 2026", "title": "Beam Designing (LSM method) 07 : Part - 07 || Extra Lecture", "dur": "2h:17m"}, {"date": "12 May 2026", "title": "Beam Designing (LSM method) 06 : Part - 06", "dur": "2h:22m"}, {"date": "11 May 2026", "title": "Beam Designing (LSM method) 05 : Part - 05", "dur": "2h:12m"}, {"date": "8 May 2026", "title": "Beam Designing (LSM method) 04 : Part - 04", "dur": "2h:12m"}, {"date": "7 May 2026", "title": "Beam Designing (LSM method) 03 : Part - 03 || Reschedule @08:10 AM", "dur": "2h:8m"}, {"date": "6 May 2026", "title": "Beam Designing (LSM method) 02 : Part - 02", "dur": "2h:13m"}, {"date": "5 May 2026", "title": "Beam Designing (LSM method) 01 : Part - 01", "dur": "2h:35m"}], "CH - 03 | Shear Designing | Lecture: | 3/3 | DPP: | 0/1": [{"date": "19 May 2026", "title": "Shear Designing 03 : Part 03 || Reschedule @07:30 AM", "dur": "2h:39m"}, {"date": "18 May 2026", "title": "Shear Designing 02 : Part 02 || Reschedule 07:30 AM", "dur": "2h:47m"}, {"date": "16 May 2026", "title": "Shear Designing 01 : Part 01 || Reschedule @07:30 AM", "dur": "2h:19m"}], "CH - 04 | Bond stress and Development length | Lecture: | 0/2 | DPP: | 0/1": [{"date": "22 May 2026", "title": "Bond stress and Development length 02 : Part 02 || Reschedule @07:40 AM", "dur": "2h:13m"}, {"date": "21 May 2026", "title": "Bond stress and Development length 01 : Part 01 || Reschedule @07:30 AM", "dur": "2h:45m"}], "CH - 05 | Torsion Design | Lecture: | 0/1": [{"date": "20 May 2026", "title": "Torsion Design 01 : Part 01 || Reschedule @07:30 AM", "dur": "2h:44m"}], "CH - 06 | Slab Design | Lecture: | 0/4 | DPP: | 0/1": [{"date": "3 Jun 2026", "title": "Slab Design 04 : Part 04 || (Recorded)", "dur": "1h:18m"}, {"date": "26 May 2026", "title": "Slab Design 03 : Part 03 || Reschedule @07:30 AM", "dur": "2h:52m"}, {"date": "25 May 2026", "title": "Slab Design 02 : Part 02 || Reschedule @07:30 AM", "dur": "2h:50m"}, {"date": "23 May 2026", "title": "Slab Design 01 : Part 01 || Reschedule @07:30 AM", "dur": "2h:39m"}], "CH - 07 | Column Designing | Lecture: | 0/2 | DPP: | 0/1": [{"date": "28 May 2026", "title": "Column Designing 02 : Part 02", "dur": "3h:10m"}, {"date": "27 May 2026", "title": "Column Designing 01 : Part 01", "dur": "2h:51m"}], "CH - 08 | Footing Designing | Lecture: | 0/2": [{"date": "30 May 2026", "title": "Footing Designing 02 : Part 02", "dur": "3h:5m"}, {"date": "29 May 2026", "title": "Footing Designing 01 : Part 01", "dur": "2h:54m"}], "CH - 09 | Beam Designing (WSM) | Lecture: | 0/2": [{"date": "2 Jun 2026", "title": "Beam Designing (WSM) 02 : Part 02 || Reschedule 08:30 PM", "dur": "2h:20m"}, {"date": "1 Jun 2026", "title": "Beam Designing (WSM) 01 : Part 01 || Reschedule 08:30 PM", "dur": "2h:9m"}], "CH - 10 | Prestress Concrete design | Lecture: | 0/2 | DPP: | 0/1": [{"date": "4 Jun 2026", "title": "Prestress Concrete design 02 : Part 02 || Rescheduled @8:30 PM", "dur": "2h:32m"}, {"date": "3 Jun 2026", "title": "Prestress Concrete design 01 : Part 01 || Rescheduled @8:30 PM", "dur": "1h:52m"}], "CH - 11 | Miscellanous (Water Tank,Retaining wall,staircase) | Lecture: | 0/1": [{"date": "5 Jun 2026", "title": "Miscellanous (Water Tank,Retaining wall,staircase) : One Shot || Rescheduled @8:30 PM", "dur": "2h:47m"}]}, "Environment": {"CH - 01 | Water Demand | Lecture: | 1/3 | DPP: | 0/1": [{"date": "20 Apr 2026", "title": "Water Demand 03 : Part 03", "dur": "1h:56m"}, {"date": "20 Apr 2026", "title": "Water Demand 02 : Part 02", "dur": "1h:57m"}, {"date": "20 Apr 2026", "title": "Water Demand 01 : Part 01", "dur": "1h:50m"}], "CH - 02 | Water Quality Parameter | Lecture: | 0/5": [{"date": "20 Apr 2026", "title": "Water Quality Parameter 05 : Part 05", "dur": "1h:40m"}, {"date": "20 Apr 2026", "title": "Water Quality Parameter 04 : Part 04", "dur": "1h:57m"}, {"date": "20 Apr 2026", "title": "Water Quality Parameter 03 : Part 03", "dur": "1h:44m"}, {"date": "20 Apr 2026", "title": "Water Quality Parameter 02 : Part 02", "dur": "1h:44m"}, {"date": "20 Apr 2026", "title": "Water Quality Parameter 01 : Part 01", "dur": "2h:1m"}], "CH - 03 | Raw Water Treatment | Lecture: | 3/6 | DPP: | 0/1": [{"date": "20 Apr 2026", "title": "Raw Water Treatment 06 : Part 06", "dur": "2h:2m"}, {"date": "20 Apr 2026", "title": "Raw Water Treatment 05 : Part 05", "dur": "1h:50m"}, {"date": "20 Apr 2026", "title": "Raw Water Treatment 04 : Part 04", "dur": "1h:47m"}, {"date": "20 Apr 2026", "title": "Raw Water Treatment 03 : Part 03", "dur": "1h:59m"}, {"date": "20 Apr 2026", "title": "Raw Water Treatment 02 : Part 02", "dur": "2h:3m"}, {"date": "20 Apr 2026", "title": "Raw Water Treatment 01 : Part 01", "dur": "1h:40m"}], "CH - 04 | Sources & Conveyance of Water | Lecture: | 0/2 | DPP: | 0/1": [{"date": "20 Apr 2026", "title": "Sources & Conveyance of Water 02 : Part 02", "dur": "1h:19m"}, {"date": "20 Apr 2026", "title": "Sources & Conveyance of Water 01 : Part 01", "dur": "1h:58m"}], "CH - 05 | Waste water characteristics | Lecture: | 0/2 | DPP: | 0/1": [{"date": "20 Apr 2026", "title": "Waste Water Characteristics 02 : Part 02", "dur": "2h"}, {"date": "20 Apr 2026", "title": "Waste Water Characteristics 01 : Part 01", "dur": "2h"}], "CH - 06 | Treatment of Waste Water | Lecture: | 0/4 | DPP: | 0/1": [{"date": "24 Apr 2026", "title": "Treatment of Waste Water 04 : Part 04", "dur": "1h:28m"}, {"date": "23 Apr 2026", "title": "Treatment of Waste Water 03 : Part 03", "dur": "1h:33m"}, {"date": "22 Apr 2026", "title": "Treatment of Waste Water 02 : Part 02", "dur": "1h:25m"}, {"date": "21 Apr 2026", "title": "Treatment of Waste Water 01 : Part 01", "dur": "1h:39m"}], "CH - 07 | Sewage Disposal | Lecture: | 0/3 | DPP: | 0/1": [{"date": "30 Apr 2026", "title": "Sewage Disposal 03: Part 03 || Reschedule @08:30 PM", "dur": "1h:16m"}, {"date": "28 Apr 2026", "title": "Sewage Disposal 02 : Part 02", "dur": "1h:50m"}, {"date": "25 Apr 2026", "title": "Sewage Disposal 01 : Part 01 || Rescheduled @4:15 PM", "dur": "1h:43m"}], "CH - 08 | Air Pollution. | Lecture: | 0/1 | DPP: | 0/1": [{"date": "1 May 2026", "title": "Air Pollution : One Shot || Reschedule 08:30 PM", "dur": "1h:14m"}], "CH - 09 | Miscellaneous | Lecture: | 0/1 | DPP: | 0/1": [{"date": "3 May 2026", "title": "Miscellaneous : One Shot", "dur": "1h:43m"}]}, "Transportation Engineering": {"CH - 01 | Geometric Design of Highway | Lecture: | 3/11 | DPP: | 0/5": [{"date": "29 Oct 2025", "title": "Geometric Design of Highway 11 : Part 11", "dur": "2h:10m"}, {"date": "28 Oct 2025", "title": "Geometric Design of Highway 10 : Part 10", "dur": "2h:4m"}, {"date": "27 Oct 2025", "title": "Geometric Design of Highway 09 : Part 09", "dur": "2h:16m"}, {"date": "25 Oct 2025", "title": "Geometric Design of Highway 08 : Part 08", "dur": "2h:17m"}, {"date": "24 Oct 2025", "title": "Geometric Design of Highway 07 : Part 07", "dur": "2h:18m"}, {"date": "18 Oct 2025", "title": "Geometric Design of Highway 06 : Part 06", "dur": "2h:27m"}, {"date": "17 Oct 2025", "title": "Geometric Design of Highway 05 : Part 05", "dur": "2h:17m"}, {"date": "16 Oct 2025", "title": "Geometric Design of Highway 04 : Part 04", "dur": "2h:11m"}, {"date": "15 Oct 2025", "title": "Geometric Design of Highway 03 : Part 03", "dur": "2h:7m"}, {"date": "14 Oct 2025", "title": "Geometric Design of Highway 02 : Part 02", "dur": "2h:5m"}, {"date": "13 Oct 2025", "title": "Geometric Design of Highway 01 : Part 01", "dur": "2h:6m"}], "CH - 02 | Traffic Engineering | Lecture: | 2/6 | DPP: | 0/2": [{"date": "5 Nov 2025", "title": "Traffic Engineering 06 : Part 06", "dur": "2h:27m"}, {"date": "4 Nov 2025", "title": "Traffic Engineering 05 : Part 05", "dur": "2h:15m"}, {"date": "3 Nov 2025", "title": "Traffic Engineering 04 : Part 04", "dur": "2h:9m"}, {"date": "1 Nov 2025", "title": "Traffic Engineering 03 : Part 03", "dur": "2h:1m"}, {"date": "31 Oct 2025", "title": "Traffic Engineering 02 : Part 02", "dur": "2h:20m"}, {"date": "30 Oct 2025", "title": "Traffic Engineering 01 : Part 01", "dur": "2h:11m"}], "CH - 03 | Highway Materials | Lecture: | 0/5 | DPP: | 0/2": [{"date": "11 Nov 2025", "title": "Highway Materials 05 : Part 05 || Extra Lecture", "dur": "2h:8m"}, {"date": "10 Nov 2025", "title": "Highway Materials 04 : Part 04", "dur": "2h:12m"}, {"date": "8 Nov 2025", "title": "Highway Materials 03 : Part 03", "dur": "2h:6m"}, {"date": "7 Nov 2025", "title": "Highway Materials 02 : Part 02", "dur": "2h:20m"}, {"date": "6 Nov 2025", "title": "Highway Materials 01 : Part 01", "dur": "2h:1m"}], "CH - 04 | Pavement Design | Lecture: | 0/4 | DPP: | 0/1": [{"date": "15 Nov 2025", "title": "Pavement Design 04 : Part 04", "dur": "2h:34m"}, {"date": "14 Nov 2025", "title": "Pavement Design 03 : Part 03 || Recording", "dur": "1h:58m"}, {"date": "13 Nov 2025", "title": "Pavement Design 02 : Part 02", "dur": "2h:3m"}, {"date": "12 Nov 2025", "title": "Pavement Design 01 : Part 01", "dur": "2h:9m"}], "CH - 05 | Highway Maintenance | Lecture: | 0/2": [{"date": "18 Nov 2025", "title": "Highway Maintenance 02 : Part 02", "dur": "2h:24m"}, {"date": "17 Nov 2025", "title": "Highway Maintenance 01 : Part 01", "dur": "2h:13m"}], "CH - 06 | Railway Engineering | Lecture: | 0/9 | DPP: | 0/4": [{"date": "3 Dec 2025", "title": "Railway Engineering 09 : Part 09", "dur": "2h:12m"}, {"date": "1 Dec 2025", "title": "Railway Engineering 08 : Part 08", "dur": "1h:11m"}, {"date": "28 Nov 2025", "title": "Railway Engineering 07 : Part 07 || Recorded", "dur": "2h:37m"}, {"date": "27 Nov 2025", "title": "Railway Engineering 06 : Part 06 || Recorded", "dur": "2h:41m"}, {"date": "25 Nov 2025", "title": "Railway Engineering 05 : Part 05", "dur": "2h:6m"}, {"date": "24 Nov 2025", "title": "Railway Engineering 04 : Part 04", "dur": "1h:20m"}, {"date": "22 Nov 2025", "title": "Railway Engineering 03 : Part 03", "dur": "2h:6m"}, {"date": "21 Nov 2025", "title": "Railway Engineering 02 : Part 02", "dur": "2h:16m"}, {"date": "19 Nov 2025", "title": "Railway Engineering 01 : Part 01", "dur": "2h:2m"}], "CH - 07 | Airport Engineering | Lecture: | 0/2": [{"date": "5 Dec 2025", "title": "Airport Engineering 02 : Part 02", "dur": "1h:49m"}, {"date": "4 Dec 2025", "title": "Airport Engineering 01 : Part 01", "dur": "1h:59m"}], "CH - 08 | Practice Session | Lecture: | 0/1": [{"date": "6 Dec 2025", "title": "Practice Session : One Shot || Extra Lecture", "dur": "1h:56m"}]}, "Steel": {"CH - 01 | General Design Requirement | Lecture: | 0/1 | DPP: | 0/1": [{"date": "8 Jul 2026", "title": "General Design Requirement 03 : Part 03", "dur": "2h:1m"}, {"date": "7 Jul 2026", "title": "General Design Requirement 02 : Part 02", "dur": "2h:1m"}, {"date": "4 Jul 2026", "title": "General Design Requirement 01 : Part 01", "dur": "1h:22m"}], "CH - 02 | Connections | Lecture: | 0/4 | DPP: | 0/4": [{"date": "20 Jul 2026", "title": "Connection 10 : Part 10", "dur": "2h:1m"}, {"date": "18 Jul 2026", "title": "Connection 09 : Part 09", "dur": "1h:45m"}, {"date": "17 Jul 2026", "title": "Connection 08 : Part 08", "dur": "1h:59m"}, {"date": "16 Jul 2026", "title": "Connection 07 : Part 07", "dur": "2h:6m"}, {"date": "15 Jul 2026", "title": "Connection 06 : Part 06", "dur": "2h:5m"}, {"date": "14 Jul 2026", "title": "Connection 05 : Part 05", "dur": "2h:3m"}, {"date": "13 Jul 2026", "title": "Connection 04 : Part 04", "dur": "2h:5m"}, {"date": "11 Jul 2026", "title": "Connection 03 : Part 03", "dur": "2h:2m"}, {"date": "10 Jul 2026", "title": "Connection 02 : Part 02", "dur": "2h:4m"}, {"date": "9 Jul 2026", "title": "Connection 01 : Part 01", "dur": "1h:57m"}], "CH - 03 | Tension Member | Lecture: | 0/1 | DPP: | 0/1": [{"date": "23 Jul 2026", "title": "Tension Member 03 : Part 03 || Extra Lecture", "dur": "2h:1m"}, {"date": "22 Jul 2026", "title": "Tension Member 02 : Part 02", "dur": "2h:1m"}, {"date": "21 Jul 2026", "title": "Tension Member 01 : Part 01", "dur": "2h:7m"}], "CH - 04 | Compression member | Lecture: | 0/3 | DPP: | 0/1": [{"date": "29 Jul 2026", "title": "Compression member 05 : Part 05 || Recorded Lecture", "dur": "2h:39m"}, {"date": "28 Jul 2026", "title": "Compression member 04 : Part 04", "dur": "2h:5m"}, {"date": "27 Jul 2026", "title": "Compression member 03 : Part 03", "dur": "1h:28m"}, {"date": "25 Jul 2026", "title": "Compression member 02 : Part 02", "dur": "1h:56m"}, {"date": "24 Jul 2026", "title": "Compression member 01 : Part 01", "dur": "2h"}], "CH - 05 | Design of beams | Lecture: | 0/1 | DPP: | 0/1": [{"date": "1 Aug 2026", "title": "Design of beams 03 : Part 03 || Reschedule @08:15 AM", "dur": "1h:50m"}, {"date": "31 Jul 2026", "title": "Design of beams 02 : Part 02", "dur": "1h:59m"}, {"date": "30 Jul 2026", "title": "Design of beams 01 : Part 01", "dur": "1h:59m"}], "CH - 06 | Plate girder & Gantry Girder": [{"date": "3 Aug 2026", "title": "Plate girder & Gantry Girder 02 : Part 02", "dur": "2h"}, {"date": "2 Aug 2026", "title": "Plate girder & Gantry Girder 01 : Part 01 || Extra Lecture", "dur": "1h"}], "CH - 07 | Plastic Analysis": [{"date": "6 Aug 2026", "title": "Plastic Analysis 03 : Part 03", "dur": "55m"}, {"date": "5 Aug 2026", "title": "Plastic Analysis 02 : Part 02", "dur": "2h:1m"}, {"date": "4 Aug 2026", "title": "Plastic Analysis 01 : Part 01", "dur": "2h"}]}, "Theory of Structures": {"CH - 01 | Basic Concept | Lecture: | 0/4 | DPP: | 0/1": [{"date": "6 Jan 2026", "title": "Basic Concept 04 : Part 04 || Extra Lecture", "dur": "2h:15m"}, {"date": "5 Jan 2026", "title": "Basic Concept 03 : Part 03", "dur": "2h:13m"}, {"date": "2 Jan 2026", "title": "Basic Concept 02 : Part 02", "dur": "2h:11m"}, {"date": "1 Jan 2026", "title": "Basic Concept 01 : Part 01", "dur": "1h:48m"}], "CH - 02 | Indeterminacy | Lecture: | 0/8 | DPP: | 0/2": [{"date": "15 Jan 2026", "title": "Indeterminacy 08 : Part 08 || Extra Lecture", "dur": "2h:39m"}, {"date": "14 Jan 2026", "title": "Indeterminacy 07 : Part 07 || Extra Lecture", "dur": "2h:9m"}, {"date": "13 Jan 2026", "title": "Indeterminacy 06 : Part 06", "dur": "1h:59m"}, {"date": "12 Jan 2026", "title": "Indeterminacy 05 : Part 05", "dur": "2h:34m"}, {"date": "10 Jan 2026", "title": "Indeterminacy 04 : Part 04", "dur": "2h:24m"}, {"date": "9 Jan 2026", "title": "Indeterminacy 03 : Part 03", "dur": "2h:9m"}, {"date": "8 Jan 2026", "title": "Indeterminacy 02 : Part 02", "dur": "2h:5m"}, {"date": "7 Jan 2026", "title": "Indeterminacy 01 : Part 01", "dur": "2h:33m"}], "CH - 03 | Truss | Lecture: | 0/3 | DPP: | 0/1": [{"date": "19 Jan 2026", "title": "Truss 03 : Part 03", "dur": "1h:56m"}, {"date": "17 Jan 2026", "title": "Truss 02 : Part 02", "dur": "2h:5m"}, {"date": "16 Jan 2026", "title": "Truss 01 : Part 01", "dur": "2h:33m"}], "CH - 04 | Method of Analysis | Lecture: | 0/8 | DPP: | 0/2": [{"date": "1 Feb 2026", "title": "Method of Analysis 08 : Part 08 || Extra Lecture", "dur": "4h:7m"}, {"date": "29 Jan 2026", "title": "Method of Analysis 07 : Part 07 || Reschedule 05:00 PM", "dur": "2h:33m"}, {"date": "28 Jan 2026", "title": "Method of Analysis 06 : Part 06 || Reschedule 05:00 PM", "dur": "2h:15m"}, {"date": "27 Jan 2026", "title": "Method of Analysis 05 : Part 05", "dur": "1h:52m"}, {"date": "23 Jan 2026", "title": "Method of Analysis 04 : Part 04", "dur": "2h:3m"}, {"date": "22 Jan 2026", "title": "Method of Analysis 03 : Part 03", "dur": "1h:59m"}, {"date": "21 Jan 2026", "title": "Method of Analysis 02 : Part 02", "dur": "2h:1m"}, {"date": "20 Jan 2026", "title": "Method of Analysis 01 : Part 01", "dur": "2h:12m"}], "CH - 05 | Arch | Lecture: | 0/1 | DPP: | 0/1": [{"date": "8 Feb 2026", "title": "Arch : One Shot", "dur": "3h:30m"}], "CH - 06 | Cable | Lecture: | 0/1": [{"date": "28 Feb 2026", "title": "Cable : One Shot", "dur": "2h:28m"}], "CH - 07 | Influence Line Diagram | Lecture: | 0/3 | DPP: | 0/1": [{"date": "1 Mar 2026", "title": "Influence Line Diagram 03 : Part 03 || Extra Lecture", "dur": "1h:20m"}, {"date": "1 Mar 2026", "title": "Influence Line Diagram 02 : Part 02 || Extra Lecture", "dur": "1h:47m"}, {"date": "1 Mar 2026", "title": "Influence Line Diagram 01 : Part 01 || Extra Lecture", "dur": "2h:36m"}]}, "Irrigation & Hydrology": {"CH - 01 | Irrigation & Methods of Irrigation | Lecture: | 0/2": [{"date": "6 Apr 2026", "title": "Irrigation & Methods of Irrigation 02 : Part 02", "dur": "2h:4m"}, {"date": "4 Apr 2026", "title": "Irrigation & Methods of Irrigation 01 : Part 01", "dur": "1h:59m"}], "CH - 02 | Soil Moisture Plant Relationship | Lecture: | 0/2": [{"date": "8 Apr 2026", "title": "Soil Moisture Plant Relationship 02 : Part 02 || Extra Lecture", "dur": "1h:40m"}, {"date": "7 Apr 2026", "title": "Soil Moisture Plant Relationship 01 : Part 01", "dur": "1h:27m"}], "CH - 03 | Water Requirements of Crops | Lecture: | 0/3": [{"date": "13 Apr 2026", "title": "Water Requirements of Crops 03 : Part 03 || Extra Lecture", "dur": "2h"}, {"date": "11 Apr 2026", "title": "Water Requirements of Crops 02 : Part 02 || Extra Lecture", "dur": "1h:51m"}, {"date": "9 Apr 2026", "title": "Water Requirements of Crops 01 : Part 01", "dur": "2h:5m"}], "CH - 04 | Water Logging & Reclamation of Saline Soil | Lecture: | 0/1": [{"date": "14 Apr 2026", "title": "Water Logging & Reclamation of Saline Soil : One Shot", "dur": "1h:57m"}], "CH - 05 | Canal Design | Lecture: | 0/3 | DPP: | 0/1": [{"date": "17 Apr 2026", "title": "Canal Design 03 : Part 03", "dur": "1h:39m"}, {"date": "16 Apr 2026", "title": "Canal Design 02 : Part 02", "dur": "1h:58m"}, {"date": "15 Apr 2026", "title": "Canal Design 01 : Part 01", "dur": "2h:3m"}], "CH - 06 | Canal Regulation Work | Lecture: | 0/2": [{"date": "20 Apr 2026", "title": "Canal Regulation Work 02 : Part 02", "dur": "1h:36m"}, {"date": "18 Apr 2026", "title": "Canal Regulation Work 01 : Part 01", "dur": "2h:21m"}], "CH - 07 | Canal Headwork & Seepage Theory | Lecture: | 0/4": [{"date": "25 Apr 2026", "title": "Canal Headwork & Seepage Theory 04 : Part 04 || Extra Lecture", "dur": "1h:32m"}, {"date": "24 Apr 2026", "title": "Canal Headwork & Seepage Theory 03 : Part 03 || Extra Lecture || Reschedule 08:15 AM", "dur": "1h:49m"}, {"date": "23 Apr 2026", "title": "Canal Headwork & Seepage Theory 02 : Part 02", "dur": "1h:55m"}, {"date": "22 Apr 2026", "title": "Canal Headwork & Seepage Theory 01 : Part 01", "dur": "2h:11m"}], "CH - 08 | Canal Regulation Works and Cross Drainage Work | Lecture: | 0/1": [{"date": "26 Apr 2026", "title": "Canal Regulation Works and Cross Drainage Work : One Shot", "dur": "2h:31m"}], "CH - 09 | River Training | Lecture: | 0/1": [{"date": "28 Apr 2026", "title": "River Training : One Shot || Reschedule @8:15 AM", "dur": "2h:4m"}], "CH - 10 | Dams & Reservoirs | Lecture: | 0/3": [{"date": "4 May 2026", "title": "Dams and Reservoirs 03 : Part 03 || Extra Lecture", "dur": "1h:26m"}, {"date": "1 May 2026", "title": "Dams and Reservoirs 02 : Part 02 || Extra Lecture", "dur": "1h:49m"}, {"date": "30 Apr 2026", "title": "Dams and Reservoirs 01 : Part 01", "dur": "1h:57m"}], "CH - 11 | Introduction to Hydrology | Lecture: | 0/1": [{"date": "6 May 2026", "title": "Introduction to Hydrology : One Shot || Extra Lecture", "dur": "1h:45m"}], "CH - 12 | Precipitation | Lecture: | 0/1 | DPP: | 0/1": [{"date": "7 May 2026", "title": "Precipitation 01 : Part 01 || Extra Lecture", "dur": "2h:7m"}], "CH - 13 | Surface Runoff | Lecture: | 0/1": [{"date": "9 May 2026", "title": "Surface Runoff : One Shot || Rescheduled @ 6:00 PM", "dur": "1h:30m"}], "CH - 14 | Stream flow measurement | Lecture: | 0/1": [{"date": "11 May 2026", "title": "Stream flow measurement : One Shot", "dur": "3h:5m"}], "CH - 15 | Hydrograph | Lecture: | 0/1": [{"date": "17 May 2026", "title": "Hydrograph 01 : Part 01 || Extra Lecture", "dur": "3h:31m"}], "CH - 16 | Flood and Flood Routing | Lecture: | 0/1 | DPP: | 0/1": [{"date": "24 May 2026", "title": "Flood and Flood Routing : One Shot || Extra Lecture || Reschedule @09:15 AM", "dur": "4h:50m"}]}, "BMC&CT": {"CH - 01 | BMC (Building Materials) | Lecture: | 0/26 | DPP: | 0/11": [{"date": "31 Jan 2026", "title": "BMC (Building Materials) 26: Part 26", "dur": "2h:29m"}, {"date": "30 Jan 2026", "title": "BMC (Building Materials) 25: Part 25", "dur": "1h:53m"}, {"date": "29 Jan 2026", "title": "BMC (Building Materials) 24: Part 24", "dur": "2h:26m"}, {"date": "28 Jan 2026", "title": "BMC (Building Materials) 23: Part 23 || Rescheduled @8:10 AM", "dur": "1h:48m"}, {"date": "27 Jan 2026", "title": "BMC (Building Materials) 22: Part 22", "dur": "2h:6m"}, {"date": "24 Jan 2026", "title": "BMC (Building Materials) 21: Part 21", "dur": "1h:54m"}, {"date": "23 Jan 2026", "title": "BMC (Building Materials) 20: Part 20", "dur": "2h:7m"}, {"date": "22 Jan 2026", "title": "BMC (Building Materials) 19 : Part 19", "dur": "2h:2m"}, {"date": "21 Jan 2026", "title": "BMC (Building Materials) 18 : Part 18", "dur": "2h:9m"}, {"date": "20 Jan 2026", "title": "BMC (Building Materials) 17 : Part 17", "dur": "1h:57m"}, {"date": "19 Jan 2026", "title": "BMC (Building Materials) 16 : Part 16", "dur": "2h:3m"}, {"date": "17 Jan 2026", "title": "BMC (Building Materials) 15 : Part 15", "dur": "2h:4m"}, {"date": "16 Jan 2026", "title": "BMC (Building Materials) 14 : Part 14", "dur": "2h:9m"}, {"date": "15 Jan 2026", "title": "BMC (Building Materials) 13 : Part 13", "dur": "1h:59m"}, {"date": "14 Jan 2026", "title": "BMC (Building Materials) 12 : Part 12", "dur": "2h:4m"}, {"date": "13 Jan 2026", "title": "BMC (Building Materials) 11 : Part 11", "dur": "2h:5m"}, {"date": "12 Jan 2026", "title": "BMC (Building Materials) 10 : Part 10", "dur": "2h:1m"}, {"date": "10 Jan 2026", "title": "BMC (Building Materials) 09 : Part 09", "dur": "1h:55m"}, {"date": "9 Jan 2026", "title": "BMC (Building Materials) 08 : Part 08", "dur": "1h:58m"}, {"date": "8 Jan 2026", "title": "BMC (Building Materials) 07 : Part 07", "dur": "2h:3m"}], "CH - 02 | Building Technology (BT) | Lecture: | 0/8 | DPP: | 0/3": [{"date": "10 Feb 2026", "title": "Building Technology (BT) 08 : Part 08", "dur": "1h:58m"}, {"date": "9 Feb 2026", "title": "Building Technology (BT) 07 : Part 07", "dur": "1h:3m"}, {"date": "7 Feb 2026", "title": "Building Technology (BT) 06 : Part 06", "dur": "2h:33m"}, {"date": "6 Feb 2026", "title": "Building Technology (BT) 05 : Part 05", "dur": "2h:9m"}, {"date": "5 Feb 2026", "title": "Building Technology (BT) 04 : Part 04", "dur": "2h:30m"}, {"date": "4 Feb 2026", "title": "Building Technology (BT) 03 : Part 03", "dur": "2h:23m"}, {"date": "3 Feb 2026", "title": "Building Technology (BT) 02 : Part 02", "dur": "2h:29m"}, {"date": "2 Feb 2026", "title": "Building Technology (BT) 01 : Part 01", "dur": "2h:42m"}], "CH - 03 | Concrete Technology (CT) | Lecture: | 0/7 | DPP: | 0/4": [{"date": "17 Feb 2026", "title": "Concrete Technology 07 : Part 07 || (Recorded)", "dur": "1h:27m"}, {"date": "17 Feb 2026", "title": "Concrete Technology 06 : Part 06 || (Recorded)", "dur": "1h:59m"}, {"date": "17 Feb 2026", "title": "Concrete Technology (CT) 05 : Part 05 || (Recorded)", "dur": "2h:4m"}, {"date": "17 Feb 2026", "title": "Concrete Technology (CT) 04 : Part 04 || (Recorded)", "dur": "2h:1m"}, {"date": "17 Feb 2026", "title": "Concrete Technology (CT) 03 : Part 03 || (Recorded)", "dur": "2h:3m"}, {"date": "17 Feb 2026", "title": "Concrete Technology (CT) 02 : Part 02 || (Recorded)", "dur": "1h:58m"}, {"date": "17 Feb 2026", "title": "Concrete Technology (CT) 01 : Part 01 || (Recorded)", "dur": "2h:26m"}]}};
+const GROUPS = {priority: ["Soil Mechanics & Foundation Engineering", "Strength of Materials", "Surveying", "Reinforced Cement Concrete", "Environment", "Transportation Engineering", "Steel", "Theory of Structures", "Irrigation & Hydrology", "BMC&CT"]};
+const KEY = 'pw-tracker-v1';
+let state = JSON.parse(localStorage.getItem(KEY) || '{}');
+let scope = 'all';
+
+function durMin(s){const m=s.match(/(?:(\d+)h)?(?::?(\d+)m)?/);return (parseInt(m[1]||0))*60+parseInt(m[2]||0);}
+function save(){localStorage.setItem(KEY, JSON.stringify(state)); schedulePush();}
+function key(s,c,i){return s+'|||'+c+'|||'+i;}
+
+function lecList(subj, ch, lecs){
+  return '<div class="lecs">' + lecs.map((l,i)=>{
+    const st = state[key(subj,ch,i)] || 'todo';
+    return `<div class="lec ${st}" data-k="${key(subj,ch,i)}">
+      <div class="st" title="click to cycle">${st==='done'?'&#10003;':st==='skip'?'&ndash;':''}</div>
+      <div class="ltitle">${l.t}</div><div class="ldate">${l.d}</div><div class="ldur">${l.dur}</div></div>`;
+  }).join('') + '</div>';
+}
+
+function render(){
+  const q = document.getElementById('q').value.toLowerCase();
+  const box = document.getElementById('subjects');
+  let html = '';
+  for(const g of ['priority']){
+    for(const s of GROUPS[g]){
+      const chs = DATA[s]; if(!chs) continue;
+      const entries = Object.entries(chs);
+      const chHtml = entries.map(([ch, lecs])=>{
+        const names = lecs.map((l,i)=>({l,i,st:state[key(s,ch,i)]||'todo'}));
+        const shown = names.filter(n=>!q || n.l.t.toLowerCase().includes(q) || ch.toLowerCase().includes(q));
+        if(q && !shown.length) return '';
+        const done = names.filter(n=>n.st==='done').length, skip = names.filter(n=>n.st==='skip').length;
+        const hrs = names.reduce((a,n)=>a+durMin(n.l.dur),0)/60;
+        return `<div class="chapter"><div class="chead" data-ch>
+          <span class="cname">${ch}</span>
+          <span class="cmeta">${done}/${lecs.length} done${skip?' &middot; '+skip+' skipped':''} &middot; ${hrs.toFixed(1)}h</span></div>
+          ${lecList(s, ch, lecs)}</div>`;
+      }).join('');
+      if(!chHtml) continue;
+      const totLec = entries.reduce((a,[,l])=>a+l.length,0);
+      const totH = entries.reduce((a,[,l])=>a+l.reduce((x,y)=>x+durMin(y.dur),0),0)/60;
+      const doneAll = entries.reduce((a,[c,l])=>a+l.filter((_,i)=>state[key(s,c,i)]==='done').length,0);
+      html += `<div class="subject" data-subj="${s}"><div class="shead">
+        <span class="sname">${s}</span>
+        <div class="sbar"><div style="width:${totLec?doneAll/totLec*100:0}%"></div></div>
+        <span class="smeta">${doneAll}/${totLec} &middot; ${totH.toFixed(0)}h</span></div>${chHtml}</div>`;
+    }
+  }
+  box.innerHTML = html;
+  updateStats();
+}
+
+function scopedSubjects(){
+  const out = [];
+  for(const g of ['priority'])
+    for(const s of GROUPS[g]) if(DATA[s]) out.push([s, DATA[s]]);
+  return out;
+}
+
+function updateStats(){
+  let tot=0, done=0, skip=0, remMin=0;
+  const next = [];
+  for(const [s, chs] of scopedSubjects())
+    for(const [c, lecs] of Object.entries(chs))
+      lecs.forEach((l,i)=>{
+        const st = state[key(s,c,i)]||'todo'; tot++;
+        const m = durMin(l.dur);
+        if(st==='done') done++; else if(st==='skip') skip++;
+        else { remMin += m; if(next.length<5 && !document.getElementById('q').value) next.push({s,c,l}); }
+      });
+  const left = tot-done-skip;
+  const daily = parseFloat(document.getElementById('dailyH').value)||2;
+  const spd = parseFloat(document.getElementById('speed').value);
+  const realHrs = remMin/60/spd;
+  const days = realHrs/daily;
+  document.getElementById('stDone').textContent = done + (skip? ' (+'+skip+' skipped)':'');
+  document.getElementById('stLeft').textContent = left;
+  document.getElementById('stHrs').textContent = (remMin/60).toFixed(0)+'h ('+realHrs.toFixed(0)+'h at '+spd+'x)';
+  document.getElementById('stDays').textContent = isFinite(days)? days.toFixed(0)+' days':'–';
+  const eta = new Date(); eta.setDate(eta.getDate()+Math.ceil(days||0));
+  document.getElementById('stEta').textContent = isFinite(days)&&days>0 ? eta.toLocaleDateString() : (days===0?'Done!':'–');
+  document.getElementById('mainBar').style.width = (tot? done/tot*100:0)+'%';
+  const nb = document.getElementById('nextBox');
+  if(next.length && left>0){
+    nb.classList.remove('hidden');
+    document.getElementById('nextList').innerHTML = next.map(n=>
+      `<div class="lec todo"><div class="st"></div><div class="ltitle">${n.l.t}
+      <span style="color:var(--dim);font-size:12px"> — ${n.s.split(' ')[0]} &middot; ${n.c.split('|')[1]?.trim()||''}</span></div>
+      <div class="ldur">${n.l.dur}</div></div>`).join('');
+  } else nb.classList.add('hidden');
+}
+
+document.getElementById('subjects').addEventListener('click', e=>{
+  const st = e.target.closest('.st');
+  if(st){
+    const k = st.parentElement.dataset.k;
+    const cur = state[k]||'todo';
+    const nxt = cur==='todo'?'done':cur==='done'?'skip':'todo';
+    if(nxt==='todo') delete state[k]; else state[k]=nxt;
+    save(); render(); return;
+  }
+  const ch = e.target.closest('.chead');
+  if(ch){ const l = ch.parentElement.querySelector('.lecs'); l.classList.toggle('hidden'); return; }
+  const sh = e.target.closest('.shead');
+  if(sh){ sh.parentElement.querySelectorAll('.chapter .lecs').forEach(l=>l.classList.toggle('hidden')); return; }
+});
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on'); scope = t.dataset.g; render();
+});
+document.getElementById('q').oninput = render;
+document.getElementById('dailyH').oninput = updateStats;
+document.getElementById('speed').onchange = updateStats;
+document.getElementById('expandAll').onclick = ()=>document.querySelectorAll('.lecs').forEach(l=>l.classList.remove('hidden'));
+document.getElementById('collapseAll').onclick = ()=>document.querySelectorAll('.lecs').forEach(l=>l.classList.add('hidden'));
+document.getElementById('exportBtn').onclick = ()=>{
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state,null,1)],{type:'application/json'}));
+  a.download = 'pw-progress-backup.json'; a.click();
+};
+document.getElementById('importBtn').onclick = ()=>{
+  const i = document.createElement('input'); i.type='file'; i.accept='.json';
+  i.onchange = ()=>{const r=new FileReader(); r.onload=()=>{try{state=JSON.parse(r.result);save();render();}catch(e){alert('bad file')}};r.readAsText(i.files[0])};
+  i.click();
+};
+
+// ---------- cloud sync (private GitHub gist) ----------
+const SKEY = 'pw-sync-v1';
+let syncCfg = null;
+try{ syncCfg = JSON.parse(localStorage.getItem(SKEY) || 'null'); }catch(e){}
+let pushTimer = null, lastTs = 0;
+
+function syncStatus(msg){ document.getElementById('syncStatus').textContent = msg; }
+function syncUI(){
+  const on = !!syncCfg;
+  document.getElementById('syncPullBtn').classList.toggle('hidden', !on);
+  document.getElementById('syncPushBtn').classList.toggle('hidden', !on);
+  document.getElementById('syncOffBtn').classList.toggle('hidden', !on);
+  if(on) syncStatus('Connected via gist ' + syncCfg.gistId.slice(0,10) + '\u2026');
+}
+async function gh(method, path, body){
+  const r = await fetch('https://api.github.com' + path, {
+    method,
+    headers: {'Authorization': 'Bearer ' + syncCfg.token, 'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json'},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if(!r.ok) throw new Error('GitHub ' + r.status + (r.status===401?' (bad token)':''));
+  return r.status === 204 ? null : r.json();
+}
+async function syncPush(silent){
+  if(!syncCfg) return;
+  try{
+    await gh('PATCH', '/gists/' + syncCfg.gistId, {description:'PW Lecture Tracker',
+      files:{'pw-progress.json':{content: JSON.stringify({ts: Date.now(), state})}}});
+    lastTs = Date.now();
+    if(!silent) syncStatus('Pushed \u2713 ' + new Date().toLocaleTimeString());
+  }catch(e){ syncStatus('Push failed: ' + e.message); }
+}
+async function syncPull(silent){
+  if(!syncCfg) return;
+  try{
+    const g = await gh('GET', '/gists/' + syncCfg.gistId);
+    const f = g.files && g.files['pw-progress.json'];
+    if(!f){ if(!silent) syncStatus('Gist empty — push first.'); return; }
+    const data = JSON.parse(f.content);
+    if((data.ts||0) > lastTs && data.state){
+      state = data.state; save(); render(); lastTs = data.ts;
+      syncStatus('Pulled newer progress \u2713');
+    } else if(!silent) syncStatus('Already up to date \u2713');
+  }catch(e){ syncStatus('Pull failed: ' + e.message); }
+}
+function schedulePush(){ if(syncCfg){ clearTimeout(pushTimer); pushTimer = setTimeout(()=>syncPush(true), 2000); } }
+
+document.getElementById('syncSetupBtn').onclick = async ()=>{
+  const token = document.getElementById('syncToken').value.trim();
+  if(!token){ syncStatus('Paste a token first.'); return; }
+  const old = syncCfg;
+  syncCfg = {token, gistId: old ? old.gistId : null};
+  try{
+    if(!syncCfg.gistId){
+      const list = await gh('GET', '/gists');
+      let g = list.find(x => x.description === 'PW Lecture Tracker');
+      if(!g) g = await gh('POST', '/gists', {description:'PW Lecture Tracker', public:false,
+        files:{'pw-progress.json':{content: JSON.stringify({ts: Date.now(), state})}}});
+      syncCfg.gistId = g.id;
+    } else { await gh('GET', '/gists/' + syncCfg.gistId); }
+    localStorage.setItem(SKEY, JSON.stringify(syncCfg));
+    syncUI(); schedulePush();
+  }catch(e){ syncCfg = old; syncStatus('Connect failed: ' + e.message); }
+};
+document.getElementById('syncPullBtn').onclick = ()=>syncPull(false);
+document.getElementById('syncPushBtn').onclick = ()=>syncPush(false);
+document.getElementById('syncOffBtn').onclick = ()=>{
+  localStorage.removeItem(SKEY); syncCfg = null; syncUI();
+  syncStatus('Disconnected — progress stays on this device only.');
+};
+syncUI();
+if(syncCfg){ syncPull(true); setInterval(()=>syncPull(true), 60000); }
+render();
+</script></body></html>
