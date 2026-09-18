@@ -243,7 +243,7 @@ document.getElementById('importBtn').onclick = ()=>{
 const SKEY = 'pw-sync-v1';
 let syncCfg = null;
 try{ syncCfg = JSON.parse(localStorage.getItem(SKEY) || 'null'); }catch(e){}
-let pushTimer = null, lastTs = parseInt(localStorage.getItem('pw-ts') || '0');
+let pushTimer = null;
 
 function syncStatus(msg){ document.getElementById('syncStatus').textContent = msg; }
 function syncUI(){
@@ -266,11 +266,12 @@ async function gh(method, path, body){
 async function syncPush(silent){
   if(!syncCfg) return;
   try{
+    const content = JSON.stringify({ts: Date.now(), state});
     await gh('PATCH', '/gists/' + syncCfg.gistId, {description:'PW Lecture Tracker',
-      files:{'pw-progress.json':{content: JSON.stringify({ts: Date.now(), state})}}});
-    lastTs = Date.now(); localStorage.setItem('pw-ts', lastTs);
+      files:{'pw-progress.json':{content}}});
+    localStorage.setItem('pw-last', content);
     if(!silent) syncStatus('Pushed \u2713 ' + new Date().toLocaleTimeString());
-  }catch(e){ syncStatus('Push failed: ' + e.message); }
+  }catch(e){ syncStatus('Push failed: ' + e.message + ' (will retry on next change)'); }
 }
 async function syncPull(silent){
   if(!syncCfg) return;
@@ -278,12 +279,15 @@ async function syncPull(silent){
     const g = await gh('GET', '/gists/' + syncCfg.gistId);
     const f = g.files && g.files['pw-progress.json'];
     if(!f){ if(!silent) syncStatus('Gist empty — push first.'); return; }
-    const data = JSON.parse(f.content);
-    if((data.ts||0) > lastTs && data.state){
-      state = data.state; save(); render(); lastTs = data.ts; localStorage.setItem('pw-ts', lastTs);
+    if(f.content !== localStorage.getItem('pw-last')){
+      const data = JSON.parse(f.content);
+      state = data.state || {};
+      localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem('pw-last', f.content);
+      render();
       syncStatus('Pulled newer progress \u2713 ' + new Date().toLocaleTimeString());
     } else syncStatus('In sync \u2713 ' + new Date().toLocaleTimeString());
-  }catch(e){ syncStatus('Pull failed: ' + e.message + ' (auto-retry in 60s)'); }
+  }catch(e){ syncStatus('Pull failed: ' + e.message + ' (auto-retry in 15s)'); }
 }
 function schedulePush(){ if(syncCfg){ clearTimeout(pushTimer); pushTimer = setTimeout(()=>syncPush(true), 2000); } }
 
