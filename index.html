@@ -281,9 +281,9 @@ async function syncPull(silent){
     const data = JSON.parse(f.content);
     if((data.ts||0) > lastTs && data.state){
       state = data.state; save(); render(); lastTs = data.ts;
-      syncStatus('Pulled newer progress \u2713');
-    } else if(!silent) syncStatus('Already up to date \u2713');
-  }catch(e){ syncStatus('Pull failed: ' + e.message); }
+      syncStatus('Pulled newer progress \u2713 ' + new Date().toLocaleTimeString());
+    } else syncStatus('In sync \u2713 ' + new Date().toLocaleTimeString());
+  }catch(e){ syncStatus('Pull failed: ' + e.message + ' (auto-retry in 60s)'); }
 }
 function schedulePush(){ if(syncCfg){ clearTimeout(pushTimer); pushTimer = setTimeout(()=>syncPush(true), 2000); } }
 
